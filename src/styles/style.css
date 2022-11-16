@@ -9,6 +9,10 @@ body {
   height: 30vh;
 }
 
+.chart + .chart {
+  margin-top: 1rem;
+}
+
 .loading {
   position: fixed;
   left: 0;

@@ -3,7 +3,7 @@ import { onePointCrossoverOnPopulation } from "./genetic-algorithms/сrossover";
 import { Child } from "./models/child";
 import { shuffleArray } from "./utils/array";
 import { createChart, createChartDataFromChild } from "./utils/chart";
-import { randomInt, strip } from "./utils/number";
+import { randomFloat, strip } from "./utils/number";
 
 // Y = sin(2x)
 function Y(x: number): number {
@@ -41,8 +41,7 @@ function createInitialChild(
 function createChild(): Child {
   const child: Child = [];
   for (let i = 0; i < initialChild.length; i++) {
-    const index = randomInt(0, initialChild.length - 1);
-    child.push(initialChild[index]);
+    child.push(Number(randomFloat(-1, 1).toFixed(6)));
   }
   return child;
 }
