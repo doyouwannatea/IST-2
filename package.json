@@ -11,5 +11,9 @@
   "devDependencies": {
     "typescript": "^4.6.4",
     "vite": "^3.2.3"
+  },
+  "dependencies": {
+    "@amcharts/amcharts5": "^5.2.32",
+    "@amcharts/amcharts5-geodata": "^5.0.6"
   }
 }
