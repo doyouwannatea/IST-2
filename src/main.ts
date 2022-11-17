@@ -47,7 +47,7 @@ function createInitialChild(
 function createChild(): Child {
   const child: Child = [];
   for (let i = 0; i < initialChild.length; i++) {
-    child.push(Y(randomFloat(0.1, 10)));
+    child.push(Y(Number(randomFloat(0.1, 10).toFixed(1))));
   }
   return child;
 }
@@ -79,9 +79,8 @@ function createBestChildChart(population: Child[]) {
   createChart(createChartDataFromChild(bestChild));
 }
 
-const loadingEl: HTMLDivElement | null = document.querySelector(".loading");
-
 async function start() {
+  const loadingEl: HTMLDivElement | null = document.querySelector(".loading");
   if (loadingEl) loadingEl.style.display = "flex";
 
   const chartFitness = createChartDataFromChild(fitness);
@@ -94,40 +93,38 @@ async function start() {
 
   createBestChildChart(population);
 
-  while (bestFitness > 0.5 && populationCount < 2000) {
-    // await timeout(() => {
-    console.log(`Популяция: ${populationCount}`);
-    populationCount += 1;
-    // Shuffle
-    population = shuffleArray(population);
+  while (bestFitness > 0.5 && populationCount < 10000) {
+    await timeout(() => {
+      console.log(`Популяция: ${populationCount}`);
+      populationCount += 1;
+      // Shuffle
+      population = shuffleArray(population);
 
-    // Crossover
-    population.push(...onePointCrossoverOnPopulation(population));
+      // Crossover
+      population.push(...onePointCrossoverOnPopulation(population));
 
-    // Mutate
-    population = population.map(twoPointMutate);
+      // Mutate
+      population = [
+        ...population.slice(0, population.length / 2).map(twoPointMutate),
+        ...population.slice(population.length / 2),
+      ];
 
-    // Delete the half
-    const fitness = findPopulationFitness(population).slice(
-      0,
-      population.length / 2
-    );
-    population = fitnessToPopulation(population, fitness);
-    bestFitness = fitness[0].value;
+      // Delete the half
+      const fitness = findPopulationFitness(population).slice(
+        0,
+        population.length / 2
+      );
+      population = fitnessToPopulation(population, fitness);
+      bestFitness = fitness[0].value;
 
-    console.log(fitness);
-    console.log(bestFitness);
-    console.log("—————————————————————————");
-    // }, 0);
+      console.log(fitness);
+      console.log(bestFitness);
+      console.log("—————————————————————————");
+    }, 10);
   }
 
   createBestChildChart(population);
   if (loadingEl) loadingEl.style.display = "none";
 }
 
-const startButton: HTMLButtonElement | null =
-  document.querySelector(".start-button");
-
-startButton?.addEventListener("click", start);
-
-// document.addEventListener("DOMContentLoaded", () => setTimeout(start, 200));
+document.addEventListener("DOMContentLoaded", () => setTimeout(start, 200));

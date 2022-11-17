@@ -28,27 +28,27 @@ export function onePointCrossover(
 export function onePointCrossoverOnPopulation(population: Child[]): Child[] {
   const newPopulation: Child[] = [];
   const fitness = findPopulationFitness(population);
-  const bestFitness = fitnessToPopulation(population, fitness.slice(0, 5));
-  const restFitness = fitnessToPopulation(
+  const bestChildren = fitnessToPopulation(population, fitness.slice(0, 5));
+  const restPopulation = fitnessToPopulation(
     population,
-    shuffleArray(fitness.slice(bestFitness.length))
+    shuffleArray(fitness.slice(bestChildren.length))
   );
 
-  for (let i = 0; i < bestFitness.length; i++) {
+  for (let i = 0; i < bestChildren.length; i++) {
     newPopulation.push(
       ...onePointCrossover(
-        bestFitness[i],
-        restFitness[i],
+        bestChildren[i],
+        restPopulation[i],
         randomInt(0, population[0].length - 1)
       )
     );
   }
 
-  for (let i = bestFitness.length; i < restFitness.length - 1; i += 2) {
+  for (let i = bestChildren.length; i < restPopulation.length - 1; i += 2) {
     newPopulation.push(
       ...onePointCrossover(
-        restFitness[i],
-        restFitness[i + 1],
+        restPopulation[i],
+        restPopulation[i + 1],
         randomInt(0, population[0].length - 1)
       )
     );
