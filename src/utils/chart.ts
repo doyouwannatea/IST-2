@@ -4,9 +4,11 @@ import * as am5 from "@amcharts/amcharts5/index";
 import * as am5xy from "@amcharts/amcharts5/xy";
 import { ChartData } from "../models/chart";
 import { Child } from "../models/child";
+import { findPopulationFitness } from "../fitness";
+import { initialChild } from "../population";
 
 export function createChartDataFromChild(child: Child): ChartData[] {
-  return child.map((sign, index) => ({ x: index, y: sign }));
+  return child.map((sign, index) => ({ x: initialChild[index], y: sign }));
 }
 
 export function createChart(chartData: ChartData[]): void {
@@ -52,6 +54,7 @@ export function createChart(chartData: ChartData[]): void {
       maxDeviation: 0.2,
       renderer: am5xy.AxisRendererX.new(root, {}),
       tooltip: am5.Tooltip.new(root, {}),
+      max: Math.max(...chartData.map((value) => Number(value.x))),
     })
   );
 
@@ -83,4 +86,9 @@ export function createChart(chartData: ChartData[]): void {
   // https://www.amcharts.com/docs/v5/concepts/animations/
   series.appear(1000);
   chart.appear(1000, 100);
+}
+
+export function createBestChildChart(population: Child[]) {
+  const bestMember = population[findPopulationFitness(population)[0].index];
+  createChart(createChartDataFromChild(bestMember));
 }

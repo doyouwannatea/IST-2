@@ -1,4 +1,4 @@
-import { findPopulationFitness, fitnessToPopulation } from "../main";
+import { findPopulationFitness, fitnessToPopulation } from "../fitness";
 import { Child } from "../models/child";
 import { shuffleArray } from "../utils/array";
 import { randomInt } from "../utils/number";
@@ -11,8 +11,8 @@ export function onePointCrossover(
   if (parentA.length !== parentB.length)
     throw new Error("parentA.length !== parentB.length");
   if (point > parentA.length - 2)
-    throw new Error(`Point = ${point}, but must be <= ${parentA.length - 2}`);
-  if (point < 0) throw new Error(`Point = ${point}, but must be >= 0`);
+    throw new Error(`point = ${point}, but must be <= ${parentA.length - 2}`);
+  if (point < 0) throw new Error(`point = ${point}, but must be >= 0`);
 
   const parentALeft = parentA.slice(0, point + 1);
   const parentARight = parentA.slice(point + 1);
@@ -26,26 +26,37 @@ export function onePointCrossover(
 }
 
 export function onePointCrossoverOnPopulation(population: Child[]): Child[] {
-  const newPopulation: Child[] = [];
+  const children: Child[] = [];
   const fitness = findPopulationFitness(population);
-  const bestChildren = fitnessToPopulation(population, fitness.slice(0, 5));
+  // Находим 5 лучших представителей популяции
+  const bestPopulationMembers = fitnessToPopulation(
+    population,
+    fitness.slice(0, 5)
+  );
+  // Остальные представители популяции
   const restPopulation = fitnessToPopulation(
     population,
-    shuffleArray(fitness.slice(bestChildren.length))
+    shuffleArray(fitness.slice(bestPopulationMembers.length))
   );
 
-  for (let i = 0; i < bestChildren.length; i++) {
-    newPopulation.push(
+  // Скрещивание лучших представителей со случайными из оставшейся популяции
+  for (let i = 0; i < bestPopulationMembers.length; i++) {
+    children.push(
       ...onePointCrossover(
-        bestChildren[i],
+        bestPopulationMembers[i],
         restPopulation[i],
         randomInt(0, population[0].length - 1)
       )
     );
   }
 
-  for (let i = bestChildren.length; i < restPopulation.length - 1; i += 2) {
-    newPopulation.push(
+  // Скрещивание оставшихся представителей популяции
+  for (
+    let i = bestPopulationMembers.length;
+    i < restPopulation.length - 1;
+    i += 2
+  ) {
+    children.push(
       ...onePointCrossover(
         restPopulation[i],
         restPopulation[i + 1],
@@ -54,5 +65,5 @@ export function onePointCrossoverOnPopulation(population: Child[]): Child[] {
     );
   }
 
-  return newPopulation;
+  return children;
 }
