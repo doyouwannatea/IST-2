@@ -1,6 +1,6 @@
 import { twoPointMutate } from "./genetic-algorithms/mutate";
 import { onePointCrossoverOnPopulation } from "./genetic-algorithms/сrossover";
-import { Child } from "./models/child";
+import { Child, ChildFit } from "./models/child";
 import { shuffleArray } from "./utils/array";
 import { createChart, createChartDataFromChild } from "./utils/chart";
 import { randomFloat, strip } from "./utils/number";
@@ -26,6 +26,12 @@ function calcFitness(child: Child): number {
   return euclidDistance(child, fitness);
 }
 
+export function findPopulationFitness(population: Child[]): ChildFit[] {
+  return [...population]
+    .map((child, index) => ({ value: calcFitness(child), index }))
+    .sort((a, b) => a.value - b.value);
+}
+
 function createInitialChild(
   start: number,
   end: number,
@@ -41,7 +47,7 @@ function createInitialChild(
 function createChild(): Child {
   const child: Child = [];
   for (let i = 0; i < initialChild.length; i++) {
-    child.push(Number(randomFloat(-1, 1).toFixed(6)));
+    child.push(Y(randomFloat(0.1, 10)));
   }
   return child;
 }
@@ -50,46 +56,78 @@ function createInitialPopulation(count: number): Child[] {
   return new Array(count).fill(undefined).map(createChild);
 }
 
+export function fitnessToPopulation(
+  population: Child[],
+  fitness: ChildFit[]
+): Child[] {
+  return population.filter((_, index) =>
+    fitness.find((fit) => fit.index === index)
+  );
+}
+
+function timeout(cb: () => void, timeout: number) {
+  return new Promise((resolve) =>
+    setTimeout(() => {
+      cb();
+      resolve(undefined);
+    }, timeout)
+  );
+}
+
+function createBestChildChart(population: Child[]) {
+  const bestChild = population[findPopulationFitness(population)[0].index];
+  createChart(createChartDataFromChild(bestChild));
+}
+
+const loadingEl: HTMLDivElement | null = document.querySelector(".loading");
+
 async function start() {
-  const loadingEl: HTMLDivElement | null = document.querySelector(".loading");
+  if (loadingEl) loadingEl.style.display = "flex";
 
   const chartFitness = createChartDataFromChild(fitness);
   createChart(chartFitness);
 
-  // default population
-  const population = createInitialPopulation(20);
+  // initial population
+  let population = createInitialPopulation(20);
+  let populationCount = 1;
+  let bestFitness = Number.MAX_SAFE_INTEGER;
 
-  const count = 1;
-  let newPopulation: Child[] = [];
-  for (let i = 0; i < count; i++) {
-    await new Promise((resolve) => {
-      // Shuffle
-      newPopulation = shuffleArray(population);
-      // Crossover
-      newPopulation = onePointCrossoverOnPopulation(newPopulation);
-      // Mutate
-      newPopulation = newPopulation.map(twoPointMutate);
-      // Delete the half
-      const fitness = newPopulation
-        .map((child, index) => ({ value: calcFitness(child), index }))
-        .sort((a, b) => a.value - b.value)
-        .slice(0, newPopulation.length / 2);
+  createBestChildChart(population);
 
-      const greatPopulation = newPopulation.filter((_, index) =>
-        fitness.find((fit) => fit.index === index)
-      );
+  while (bestFitness > 0.5 && populationCount < 2000) {
+    // await timeout(() => {
+    console.log(`Популяция: ${populationCount}`);
+    populationCount += 1;
+    // Shuffle
+    population = shuffleArray(population);
 
-      newPopulation = greatPopulation;
+    // Crossover
+    population.push(...onePointCrossoverOnPopulation(population));
 
-      console.log(fitness[0].value);
-      resolve(undefined);
-    });
-    console.log(i + 1);
-    console.log("\n");
+    // Mutate
+    population = population.map(twoPointMutate);
+
+    // Delete the half
+    const fitness = findPopulationFitness(population).slice(
+      0,
+      population.length / 2
+    );
+    population = fitnessToPopulation(population, fitness);
+    bestFitness = fitness[0].value;
+
+    console.log(fitness);
+    console.log(bestFitness);
+    console.log("—————————————————————————");
+    // }, 0);
   }
 
+  createBestChildChart(population);
   if (loadingEl) loadingEl.style.display = "none";
-  createChart(createChartDataFromChild(newPopulation.map(calcFitness)));
 }
 
-document.addEventListener("DOMContentLoaded", () => setTimeout(start, 200));
+const startButton: HTMLButtonElement | null =
+  document.querySelector(".start-button");
+
+startButton?.addEventListener("click", start);
+
+// document.addEventListener("DOMContentLoaded", () => setTimeout(start, 200));

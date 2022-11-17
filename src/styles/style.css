@@ -20,7 +20,7 @@ body {
   bottom: 0;
   top: 0;
   background-color: rgba(0, 0, 0, 0.3);
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   color: #fff;
