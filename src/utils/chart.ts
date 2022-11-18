@@ -11,10 +11,14 @@ export function createChartDataFromChild(child: Child): ChartData[] {
   return child.map((sign, index) => ({ x: initialChild[index], y: sign }));
 }
 
-export function createChart(chartData: ChartData[]): void {
-  const chartEl = document.createElement("div");
-  chartEl.classList.add("chart");
-  document.getElementById("app")?.insertAdjacentElement("beforeend", chartEl);
+export function createChart(
+  chartData: ChartData[]
+): am5xy.LineSeries {
+  const chartEl = document.createElement('div');
+  chartEl.classList.add('chart');
+  document
+    .getElementById('app')
+    ?.insertAdjacentElement('beforeend', chartEl);
 
   /* Chart code */
   // Create root element
@@ -86,9 +90,12 @@ export function createChart(chartData: ChartData[]): void {
   // https://www.amcharts.com/docs/v5/concepts/animations/
   series.appear(1000);
   chart.appear(1000, 100);
+
+  return series;
 }
 
 export function createBestChildChart(population: Child[]) {
-  const bestMember = population[findPopulationFitness(population)[0].index];
-  createChart(createChartDataFromChild(bestMember));
+  const bestMember =
+    population[findPopulationFitness(population)[0].index];
+  return createChart(createChartDataFromChild(bestMember));
 }

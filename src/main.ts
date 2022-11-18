@@ -28,7 +28,7 @@ async function start() {
   let populationCount = 1;
   let bestFitness = Number.MAX_SAFE_INTEGER;
 
-  createBestChildChart(population);
+  const lineSeries = createBestChildChart(population);
 
   while (
     bestFitness > Number(import.meta.env.VITE_TARGET_FITNESS) &&
@@ -54,10 +54,13 @@ async function start() {
         0,
         population.length / 2
       );
-      population = fitnessToPopulation(population, fitness);
 
       // Находим евклидово расстояние лучшего представителя популяции
+      lineSeries.data.setAll(
+        createChartDataFromChild(population[fitness[0].index])
+      );
       bestFitness = fitness[0].value;
+      population = fitnessToPopulation(population, fitness);
 
       console.log(population);
       console.log(fitness);
@@ -66,8 +69,7 @@ async function start() {
     }, 10);
   }
 
-  createBestChildChart(population);
-  if (loadingEl) loadingEl.style.display = "none";
+  if (loadingEl) loadingEl.style.display = 'none';
 }
 
 document.addEventListener("DOMContentLoaded", () => setTimeout(start, 200));
